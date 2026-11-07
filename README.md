@@ -2,7 +2,7 @@
 
 A Claude Code plugin that builds mastery-learning courses the way Math Academy does: a prerequisite graph of small
 topics, a worked example for every knowledge point, practice with checked answer keys, spaced and interleaved review,
-and a diagnostic. It also ships the evals that check whether the courses it builds are any good.
+and a diagnostic.
 
 The plugin has three parts:
 
@@ -52,12 +52,6 @@ python3 skills/mastery-course-builder/validate_course.py course.json --graph-onl
 
 The validator checks structure only. The skill's correctness pass and the `course-checker` agent cover answer keys,
 facts and leaks.
-
-## Run the evals
-
-The eval suite is being built in `evals/`, error analysis first: run the agent on real cases, read what it gets
-wrong, then write one grader per failure mode. `evals/README.md` tracks the cases and graders as they land. The suite
-runs with Claude Code's plugin eval runner, `claude plugin eval . --no-publish`.
 
 ## Run the tests
 
