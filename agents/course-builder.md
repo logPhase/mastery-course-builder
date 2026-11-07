@@ -28,5 +28,7 @@ In the output folder:
 4. Write one file per topic and assemble `course.json` with a script. Run the full validator after each strand.
 5. In the correctness pass, have the checker agent blind-solve the items (Agent tool, `subagent_type`
    `mastery-course-builder:course-checker`; plugin agents need the full name), giving it the course path, the brief and
-   the sources. Fix every key it disproves and every fact it marks unsupported, then run the validator again.
+   the sources. Fix every key it disproves and every fact it marks unsupported, then run the validator again. If you
+   have no Agent tool (you are running as a subagent), blind-solve in a separate pass from a copy without the keys,
+   as `agents/course-checker.md` describes, and write in the report that the independent check is still to run.
 6. Write `build-report.md` and finish with its summary: the validator's RESULT line, keys fixed, cross-check fixes, leaks fixed, and the count of WARNs kept.

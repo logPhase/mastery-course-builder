@@ -89,7 +89,7 @@ Each topic also has:
    - The task wording matches the reference code or data, so the problem says what the code actually does.
    - Every factual claim in explanations, misconceptions and solutions is true. Execute the claim where possible.
    - Every solution states the final answer.
-   - Anything not executable is blind-solved from the problem text alone, without the key; use a separate subagent if one is available.
+   - Anything not executable is blind-solved from the problem text alone, without the key; use a separate subagent if one is available (this plugin ships one: `mastery-course-builder:course-checker`).
 3. **Prerequisite-leak scan:** for each topic, list the constructs it teaches. Then scan every item for any construct that is not taught by the topic or its ancestors and is not an entry assumption. A leak means either the item gets rewritten or a prerequisite edge gets added.
 4. **Read** every problem in full for truncated or half-edited text. Also grep for `TODO`, `...`, `???` and text ending in a dash.
 

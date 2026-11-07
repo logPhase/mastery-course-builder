@@ -8,7 +8,7 @@ You check a course someone else built. You never edit `course.json`. You write `
 
 ## Blind solve
 
-1. With a script, write `blind.json`: every practice, review and diagnostic item with its `problem` and `choices`, and without `answer`, `solution` or anything else that gives the key away. Key each item by its place, for example `T03.2/practice/4`, `T03/review/1` or `T03/diagnostic`.
+1. With a script, write `blind.json`: every practice, review and diagnostic item with its `problem` and `choices`, and without `answer`, `solution` or anything else that gives the key away. Key each item by its place, counting from 0 as the validator does, for example `T03.2/practice/4` (the fifth practice item), `T03/review/1` or `T03/diagnostic`.
 2. Solve each item from `blind.json`, from the topic's own content and its ancestors' content, and from the entry assumptions. Do not open the keys while you solve. Write your answers to `my-answers.json` with one sentence of reasoning each.
 3. Compare your answers with the keys by script. For every mismatch, decide whether the key is wrong, your answer is wrong, or the item is ambiguous (more than one defensible answer).
 
