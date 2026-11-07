@@ -1,0 +1,14 @@
+{
+  "name": "logphase",
+  "owner": {
+    "name": "logPhase"
+  },
+  "description": "logPhase plugins for Claude Code.",
+  "plugins": [
+    {
+      "name": "mastery-course-builder",
+      "source": "./",
+      "description": "Build mastery-learning courses (prerequisite graph, small topics, worked examples, practice, spaced review) with Math Academy's evidence-based pedagogy, and evaluate them."
+    }
+  ]
+}
