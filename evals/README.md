@@ -47,4 +47,7 @@ below the plugin.
 | Case | What it checks |
 |---|---|
 | `sql-group-by` | A one-hour SQL course: the files exist, the skill was used, the validator ran and its last run
-passed, the SQL items were executed, the items were blind-solved, and the report counts leaks. |
+passed, the SQL items were executed, the items were blind-solved, the report counts leaks, and the build never waited
+on background writers with a scheduled wake-up. |
+
+The failure modes found so far, their evidence and their graders are in `failure-modes.md`.

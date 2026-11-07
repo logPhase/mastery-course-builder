@@ -25,7 +25,11 @@ In the output folder:
 1. Invoke the `mastery-course-builder` skill with the Skill tool and follow its build process in order: scope, graph, sequence, content, correctness pass, validate. Do not write content before `python3 validate_course.py course.json --graph-only` passes. The validator sits in the skill's folder.
 2. Teach from the sources. Every domain fact in an explanation, worked example, misconception or solution comes from the sources or is standard knowledge of the field. Give each topic a `sources` list naming the files and sections it rests on. Never invent a number.
 3. Follow the brief's answer style. When it asks for multiple choice, give every practice, review and diagnostic item a `choices` list of 3 or 4 strings and set `answer` to the letter of the one correct choice (`"A"` is the first). Build the wrong choices from the KP's misconceptions, and let the solution say why each wrong choice is wrong.
-4. Write one file per topic and assemble `course.json` with a script. Run the full validator after each strand.
+4. Write one file per topic and assemble `course.json` with a script. Run the full validator after each strand. If you
+   split the writing across subagents, start them in the foreground: several Agent calls in one message run in
+   parallel, and your turn waits for all of them. Never end your turn while a subagent you started is still running,
+   and never wait with a scheduled wake-up. A headless run stops background work 10 minutes after your last turn, and
+   the topics it was writing stay empty.
 5. In the correctness pass, have the checker agent blind-solve the items (Agent tool, `subagent_type`
    `mastery-course-builder:course-checker`; plugin agents need the full name), giving it the course path, the brief and
    the sources. Fix every key it disproves and every fact it marks unsupported, then run the validator again. If you

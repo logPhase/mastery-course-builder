@@ -32,9 +32,13 @@ about 2 hours, single-answer multiple choice, from the docs in ./notes. Write it
 Without a session, run the agent directly:
 
 ```
-claude -p --plugin-dir /path/to/mastery-course-builder --agent mastery-course-builder:course-builder \
-	--permission-mode acceptEdits "Build the course described in ./brief.md and write it to ./course"
+CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 claude -p --plugin-dir /path/to/mastery-course-builder \
+	--agent mastery-course-builder:course-builder --permission-mode acceptEdits \
+	"Build the course described in ./brief.md and write it to ./course"
 ```
+
+`CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0` keeps a headless run from stopping background subagents 10 minutes after the
+agent's last turn. The agent runs its subagents in the foreground, so this is a safety net.
 
 The agent writes `course.json`, one `topics/<id>.json` per topic with the script that assembles them, and
 `build-report.md` with the validator result, the correctness-pass counts, the warnings it kept, and its assumptions.
