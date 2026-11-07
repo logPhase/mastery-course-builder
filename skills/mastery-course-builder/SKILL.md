@@ -21,7 +21,7 @@ Math Academy's "AI" is not an LLM. It is a hand-built expert graph plus a schedu
 |---|---|---|---|
 | 1 | Mastery learning | No topic is taught until all its prerequisites pass. Every learner meets the same bar; only time varies. | A missing prerequisite pushes the new topic past working-memory capacity, and the gaps compound. |
 | 2 | Minimise cognitive load | Each topic has 2–4 knowledge points (KPs) of rising difficulty, and each KP adds **exactly one** new difficulty. That is about 10x finer than textbooks **[MA]** (calculus: ~300 topics × ~3 KPs vs ~100 sections). | Working memory holds about 4 new items. Smaller stairs let more learners reach the top. |
-| 3 | Worked examples | Every KP opens with a fully worked example whose steps sit under subgoal labels. Add a diagram when the idea is spatial (dual coding). | Novices learn more from studying solutions than from solving cold. Subgoal labels show the structure. |
+| 3 | Worked examples | Every KP opens with a fully worked example whose steps sit under subgoal labels. Draw a diagram whenever the idea has a shape (dual coding). | Novices learn more from studying solutions than from solving cold. Subgoal labels show the structure. |
 | 4 | Active learning / deliberate practice | Give the minimum explanation, then problems within minutes. Budget about 7x more time solving than reading **[MA]**. | The feeling of learning is not learning. Passive content feels productive and isn't. |
 | 5 | Direct instruction | Show the method explicitly. Give novices no "discover it" tasks. Treat struggle as a signal to step back, not as a teaching device. | Minimal guidance underperforms for novices (Kirschner, Sweller & Clark 2006). |
 | 6 | Automaticity | Low-level skills that later topics lean on get practice and review until they are fast, not just correct. | Automatic skills free working memory for the higher-level step. |
@@ -70,12 +70,20 @@ Each KP has these fields:
 - `label`: the subgoal label.
 - `adds`: the one new difficulty this KP introduces over the previous one, in one phrase. If you need "and", split the KP.
 - `explanation`: at most 150 words, covering only what the example needs. Leave out history, motivation and analogy unless they carry the method.
-- `worked_example`: `problem`, `steps` as `[{subgoal, work}]`, `answer`, and optionally a `diagram` description precise enough to draw.
+- `worked_example`: `problem`, `steps` as `[{subgoal, work}]`, `answer`, and `diagram`: the path of a draw.io file the build draws, `diagrams/<kp-id>.drawio` (see Diagrams). Never a description of a picture: a learner cannot study a description.
 - `practice`: at least 5 items that use the worked example's method with new surface values or context. Each item has `problem`, `answer` (in `answer_format`) and `solution` (full steps). Five is a *pool*, not a dose: learners usually pass after 2–3, but halts and retries need fresh items.
 - `misconceptions`: 1–2 real errors. Solutions point out where each error goes wrong. For multiple choice, the distractors are these errors.
 - `key_prerequisites`: the ancestor topics this KP actually uses. Remediation targets these.
 
 KP1 is the simplest case. Each later KP adds one complication, and the last KP reaches the hardest case the topic promises. Together the KPs cover every problem type that a learner who "knows the topic" should be able to solve.
+
+### Diagrams
+Draw a diagram for every KP whose worked example has a shape: events in time, a flow of data or decisions, a structure (tree, graph, table), a before and after, or quantities. In practice that is most KPs.
+- One file per KP, `diagrams/<kp-id>.drawio` next to `course.json`: uncompressed draw.io XML (`<diagram compressed="false">`), one page.
+- Standard notation a reader already knows: a timeline (time left to right, one row per source), a UML sequence, a data flow, a state machine, a decision tree, a table.
+- One question per diagram, as its title. At most about 10 words per box, labels on the thing they name, and the worked example's own names and numbers. White background, no shadows or gradients, one colour per kind of thing across the whole course.
+- About 700 to 900 px wide, so it prints on a portrait page at a readable size. No text below font size 12.
+- Check each one by eye: `drawio -x -f png --scale 2 -o check.png diagrams/<kp-id>.drawio`, then look at the PNG. Fix overlaps, clipped labels and crossing arrows, and look again.
 
 Each topic also has:
 - `review`: at least 3 items that mix all the KPs. They come with no worked example and no hints, in mixed KP order, and one item may combine two KPs. For each confusable pair, at least one review item makes the learner choose between the two methods and tags them with `"discriminates": [idA, idB]`. That item goes in the review of whichever of the two topics comes **later** in the sequence, so it never tests something not yet taught.
@@ -92,8 +100,9 @@ Each topic also has:
    - Anything not executable is blind-solved from the problem text alone, without the key; use a separate subagent if one is available (this plugin ships one: `mastery-course-builder:course-checker`).
 3. **Prerequisite-leak scan:** for each topic, list the constructs it teaches. Then scan every item for any construct that is not taught by the topic or its ancestors and is not an entry assumption. A leak means either the item gets rewritten or a prerequisite edge gets added.
 4. **Read** every problem in full for truncated or half-edited text. Also grep for `TODO`, `...`, `???` and text ending in a dash.
+5. **Diagrams:** every `diagram` shows the same names, numbers and order as its worked example. The validator checks that each file exists and is draw.io XML.
 
-Report the count for each step: keys fixed, cross-check fixes, and leaks fixed.
+Report the count for each step: keys fixed, cross-check fixes, leaks fixed, and diagrams fixed.
 
 Writing the content is most of the cost: about 7 items per KP, each with a solution. Keep solutions to the essential steps. For any course over about 6 topics, write the content in a build script or one file per topic and assemble `course.json`. First run `python3 validate_course.py course.json --graph-only` on the graph and sequence alone. Then fill the content strand by strand, running the full validator after each strand.
 
@@ -149,7 +158,7 @@ Report to the user:
     "confusable_with": ["T03", "entry:WHERE"],
     "knowledge_points": [{
       "id": "T02.1", "label": "...", "adds": "...", "explanation": "...",
-      "worked_example": {"problem": "...", "steps": [{"subgoal": "...", "work": "..."}], "answer": "...", "diagram": null},
+      "worked_example": {"problem": "...", "steps": [{"subgoal": "...", "work": "..."}], "answer": "...", "diagram": "diagrams/T02.1.drawio"},
       "practice": [{"kind": "answer", "problem": "...", "answer": "...", "solution": "..."}],
       "misconceptions": ["..."], "key_prerequisites": ["T01"]
     }],
@@ -165,7 +174,7 @@ Report to the user:
 #!/usr/bin/env python3
 """Structural validator for mastery-course-builder course.json. Usage: python3 validate_course.py course.json [--graph-only]
 Exit 0 = no errors (warnings may remain). Checks structure only; the manual checklist still applies."""
-import json, sys
+import json, os, sys
 from collections import defaultdict
 
 E, W = [], []
@@ -175,6 +184,8 @@ def item_ok(q): return isinstance(q, dict) and all(q.get(k) not in (None, "") fo
 def pk(a, b): return tuple(sorted((a, b)))
 
 c = json.load(open(sys.argv[1]))
+HERE = os.path.dirname(os.path.abspath(sys.argv[1]))  # diagram paths are relative to course.json
+DIAGRAMS = 0
 GRAPH_ONLY = "--graph-only" in sys.argv  # validate graph + sequence before writing content
 T = {}
 for t in c.get("topics", []):
@@ -266,6 +277,14 @@ for tid, t in T.items():
         if len(steps) < 2: err(f"{kid}: worked example needs >=2 steps")
         if any(not s.get("subgoal") for s in steps): err(f"{kid}: every worked-example step needs a subgoal label")
         if len(steps) > 8: warn(f"{kid}: {len(steps)} steps; KP may be too big")
+        d = we.get("diagram")
+        if d not in (None, ""):
+            if not isinstance(d, str) or not d.endswith(".drawio"):
+                err(f"{kid}: diagram must be the path of a .drawio file, not a description of a picture")
+            elif not os.path.isfile(os.path.join(HERE, d)): err(f"{kid}: diagram file {d} not found")
+            elif "<mxGraphModel" not in open(os.path.join(HERE, d), encoding="utf-8", errors="replace").read():
+                err(f"{kid}: {d} is not uncompressed draw.io XML")
+            else: DIAGRAMS += 1
         pr = kp.get("practice") or []
         if len(pr) < 5: err(f"{kid}: {len(pr)} practice items (need >=5)")
         for j, q in enumerate(pr):
@@ -317,7 +336,7 @@ n, hours = len(T), c.get("target_hours")
 if hours and n and not 0.6 <= (n * 20) / (hours * 60) <= 1.5:
     warn(f"size: {n} topics x ~20 min all-in = {n*20/60:.1f} h vs target_hours={hours}")
 enc = sum(1 for t in T.values() if t.get("encompasses"))
-print(f"topics={n} kps={sum(len(t.get('knowledge_points') or []) for t in T.values())} "
+print(f"topics={n} kps={sum(len(t.get('knowledge_points') or []) for t in T.values())} diagrams={DIAGRAMS} "
       f"depth={max([dep(x) for x in T] or [0])} with_encompassings={enc} ({100*enc//max(n,1)}%) "
       f"est_all_in_hours={n*20/60:.1f}")
 for m in E: print("ERROR  ", m)

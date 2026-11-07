@@ -18,6 +18,7 @@ In the output folder:
 
 - `course.json`: the course, in the shape the skill defines.
 - `topics/<id>.json`: one file per topic, and the script that assembles them into `course.json`.
+- `diagrams/<kp-id>.drawio`: the drawn diagram of each knowledge point whose idea has a shape.
 - `build-report.md`: the validator's summary line, the correctness-pass counts, every WARN you kept with its reason, and your assumptions.
 
 ## Procedure
@@ -30,9 +31,11 @@ In the output folder:
    parallel, and your turn waits for all of them. Never end your turn while a subagent you started is still running,
    and never wait with a scheduled wake-up. A headless run stops background work 10 minutes after your last turn, and
    the topics it was writing stay empty.
-5. In the correctness pass, have the checker agent blind-solve the items (Agent tool, `subagent_type`
+5. Draw each knowledge point's diagram as the skill's Diagrams section says, then export it to PNG and look at it
+   before you move on. `diagram` holds the file's path, never words about a picture.
+6. In the correctness pass, have the checker agent blind-solve the items (Agent tool, `subagent_type`
    `mastery-course-builder:course-checker`; plugin agents need the full name), giving it the course path, the brief and
    the sources. Fix every key it disproves and every fact it marks unsupported, then run the validator again. If you
    have no Agent tool (you are running as a subagent), blind-solve in a separate pass from a copy without the keys,
    as `agents/course-checker.md` describes, and write in the report that the independent check is still to run.
-6. Write `build-report.md` and finish with its summary: the validator's RESULT line, keys fixed, cross-check fixes, leaks fixed, and the count of WARNs kept.
+7. Write `build-report.md` and finish with its summary: the validator's RESULT line, keys fixed, cross-check fixes, leaks fixed, diagrams fixed, and the count of WARNs kept.

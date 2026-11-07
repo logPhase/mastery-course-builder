@@ -16,6 +16,11 @@ You check a course someone else built. You never edit `course.json`. You write `
 
 Check every factual claim in explanations, worked examples, misconceptions and solutions against the sources the brief names, or against standard knowledge of the field. Mark each claim you check `supported`, `unsupported` or `contradicted`, with the file and line or section you checked.
 
+## Diagrams
+
+For each knowledge point with a `diagram`, read the labels in its draw.io XML (the `value` attributes) and check that
+they use the worked example's names, numbers and order. Report every mismatch under `diagrams` in the report.
+
 ## Leaks
 
 For each topic, list the constructs it teaches. Flag any item that uses a construct that is not taught by the topic or its ancestors and is not an entry assumption.
@@ -29,6 +34,7 @@ Write `check-report.json`:
   "blind_solve": {"checked": 0, "mismatches": [{"item": "T03.2/practice/4", "key": "B", "mine": "C", "verdict": "key_wrong | mine_wrong | ambiguous", "why": "..."}]},
   "facts": [{"where": "T02.1/explanation", "claim": "...", "verdict": "unsupported", "source": "plan.md §A.4"}],
   "leaks": [{"item": "T05/review/2", "construct": "...", "taught_in": "T09 (later)"}],
+  "diagrams": [{"kp": "T02.1", "problem": "the diagram says 6 s, the worked example says 5 s"}],
   "form": ["truncated text, TODO markers or half-edited items, one line each"]
 }
 ```

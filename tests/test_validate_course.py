@@ -46,10 +46,16 @@ def course():
     }
 
 
-def run(c, *flags):
+DRAWIO = '<mxfile><diagram name="d" compressed="false"><mxGraphModel><root><mxCell id="0"/></root></mxGraphModel></diagram></mxfile>'
+
+
+def run(c, *flags, files=None):
     with tempfile.TemporaryDirectory() as d:
         p = Path(d) / "course.json"
         p.write_text(json.dumps(c))
+        for name, text in (files or {}).items():
+            (Path(d) / name).parent.mkdir(parents=True, exist_ok=True)
+            (Path(d) / name).write_text(text)
         r = subprocess.run([sys.executable, str(VALIDATOR), str(p), *flags], capture_output=True, text=True)
     return r.returncode, r.stdout
 
@@ -59,7 +65,7 @@ class ValidateCourse(unittest.TestCase):
         code, out = run(course())
         self.assertEqual(code, 0, out)
         self.assertIn("RESULT: PASS (0 errors", out)
-        self.assertIn("topics=3 kps=6 depth=3", out)
+        self.assertIn("topics=3 kps=6 diagrams=0 depth=3", out)
 
     def test_a_prerequisite_cycle_fails(self):
         c = course()
@@ -98,6 +104,27 @@ class ValidateCourse(unittest.TestCase):
         self.assertEqual(run(c)[0], 1)
         code, out = run(c, "--graph-only")
         self.assertEqual(code, 0, out)
+
+    def test_a_drawn_diagram_passes_and_is_counted(self):
+        c = course()
+        c["topics"][0]["knowledge_points"][0]["worked_example"]["diagram"] = "diagrams/T01.1.drawio"
+        code, out = run(c, files={"diagrams/T01.1.drawio": DRAWIO})
+        self.assertEqual(code, 0, out)
+        self.assertIn("diagrams=1", out)
+
+    def test_a_described_diagram_fails(self):
+        c = course()
+        c["topics"][0]["knowledge_points"][0]["worked_example"]["diagram"] = "A timeline from 0 to 10 s with two bars."
+        code, out = run(c)
+        self.assertEqual(code, 1)
+        self.assertIn("ERROR   T01.1: diagram must be the path of a .drawio file", out)
+
+    def test_a_missing_or_compressed_diagram_file_fails(self):
+        c = course()
+        c["topics"][0]["knowledge_points"][0]["worked_example"]["diagram"] = "diagrams/T01.1.drawio"
+        self.assertIn("ERROR   T01.1: diagram file diagrams/T01.1.drawio not found", run(c)[1])
+        out = run(c, files={"diagrams/T01.1.drawio": '<mxfile><diagram name="d">7ZRNb4MwDIb/</diagram></mxfile>'})[1]
+        self.assertIn("ERROR   T01.1: diagrams/T01.1.drawio is not uncompressed draw.io XML", out)
 
 
 if __name__ == "__main__":

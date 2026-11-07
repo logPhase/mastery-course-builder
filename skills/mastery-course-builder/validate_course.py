@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Structural validator for mastery-course-builder course.json. Usage: python3 validate_course.py course.json [--graph-only]
 Exit 0 = no errors (warnings may remain). Checks structure only; the manual checklist still applies."""
-import json, sys
+import json, os, sys
 from collections import defaultdict
 
 E, W = [], []
@@ -11,6 +11,8 @@ def item_ok(q): return isinstance(q, dict) and all(q.get(k) not in (None, "") fo
 def pk(a, b): return tuple(sorted((a, b)))
 
 c = json.load(open(sys.argv[1]))
+HERE = os.path.dirname(os.path.abspath(sys.argv[1]))  # diagram paths are relative to course.json
+DIAGRAMS = 0
 GRAPH_ONLY = "--graph-only" in sys.argv  # validate graph + sequence before writing content
 T = {}
 for t in c.get("topics", []):
@@ -102,6 +104,14 @@ for tid, t in T.items():
         if len(steps) < 2: err(f"{kid}: worked example needs >=2 steps")
         if any(not s.get("subgoal") for s in steps): err(f"{kid}: every worked-example step needs a subgoal label")
         if len(steps) > 8: warn(f"{kid}: {len(steps)} steps; KP may be too big")
+        d = we.get("diagram")
+        if d not in (None, ""):
+            if not isinstance(d, str) or not d.endswith(".drawio"):
+                err(f"{kid}: diagram must be the path of a .drawio file, not a description of a picture")
+            elif not os.path.isfile(os.path.join(HERE, d)): err(f"{kid}: diagram file {d} not found")
+            elif "<mxGraphModel" not in open(os.path.join(HERE, d), encoding="utf-8", errors="replace").read():
+                err(f"{kid}: {d} is not uncompressed draw.io XML")
+            else: DIAGRAMS += 1
         pr = kp.get("practice") or []
         if len(pr) < 5: err(f"{kid}: {len(pr)} practice items (need >=5)")
         for j, q in enumerate(pr):
@@ -153,7 +163,7 @@ n, hours = len(T), c.get("target_hours")
 if hours and n and not 0.6 <= (n * 20) / (hours * 60) <= 1.5:
     warn(f"size: {n} topics x ~20 min all-in = {n*20/60:.1f} h vs target_hours={hours}")
 enc = sum(1 for t in T.values() if t.get("encompasses"))
-print(f"topics={n} kps={sum(len(t.get('knowledge_points') or []) for t in T.values())} "
+print(f"topics={n} kps={sum(len(t.get('knowledge_points') or []) for t in T.values())} diagrams={DIAGRAMS} "
       f"depth={max([dep(x) for x in T] or [0])} with_encompassings={enc} ({100*enc//max(n,1)}%) "
       f"est_all_in_hours={n*20/60:.1f}")
 for m in E: print("ERROR  ", m)
