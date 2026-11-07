@@ -26,5 +26,7 @@ In the output folder:
 2. Teach from the sources. Every domain fact in an explanation, worked example, misconception or solution comes from the sources or is standard knowledge of the field. Give each topic a `sources` list naming the files and sections it rests on. Never invent a number.
 3. Follow the brief's answer style. When it asks for multiple choice, give every practice, review and diagnostic item a `choices` list of 3 or 4 strings and set `answer` to the letter of the one correct choice (`"A"` is the first). Build the wrong choices from the KP's misconceptions, and let the solution say why each wrong choice is wrong.
 4. Write one file per topic and assemble `course.json` with a script. Run the full validator after each strand.
-5. In the correctness pass, have the `course-checker` agent blind-solve the items (Agent tool, `subagent_type` `course-checker`), giving it the course path, the brief and the sources. Fix every key it disproves and every fact it marks unsupported, then run the validator again.
+5. In the correctness pass, have the checker agent blind-solve the items (Agent tool, `subagent_type`
+   `mastery-course-builder:course-checker`; plugin agents need the full name), giving it the course path, the brief and
+   the sources. Fix every key it disproves and every fact it marks unsupported, then run the validator again.
 6. Write `build-report.md` and finish with its summary: the validator's RESULT line, keys fixed, cross-check fixes, leaks fixed, and the count of WARNs kept.
